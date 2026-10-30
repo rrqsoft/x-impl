@@ -1,5 +1,5 @@
 #!/bin/sh
-# x-impl installer. POSIX sh. No network, no sudo, no runtime dependencies.
+# x-impl installer. POSIX sh. No sudo, no runtime dependencies.
 #
 #   sh install.sh [--project DIR | --global]
 #                 [--harness claude|codex|opencode|openclaw|all]
@@ -8,11 +8,155 @@
 # Defaults: --project "$PWD", --harness all, symlink mode. A project-scope
 # install that includes OpenClaw copies into .agents/skills instead of linking,
 # because OpenClaw skips symlinks that leave the workspace.
+#
+# The same file is also the one-liner installer. Piped in by curl, with no
+# checkout around it, it first downloads and verifies a release and then hands
+# over to the copy it just unpacked. That is the only network in this file.
 
 set -eu
 
-SRC=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+# Logical, not `pwd -P`: when the one-liner runs the installer through
+# ~/.x-impl/current, the skill symlinks must point through that symlink too.
+# Resolving it here would pin them to the versioned directory behind it, and
+# the next release would leave every installed link on the old one.
+SRC=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 MARKER='<!-- x-impl -->'
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'error: %s\n' "$*" >&2; exit 1; }
+
+# --- remote mode -----------------------------------------------------------
+# Run from a checkout (or an unpacked tarball), $0 is a real file with skills/
+# beside it and everything below is skipped. Piped in by curl it is not, so we
+# fetch the release, verify it, unpack it under $X_IMPL_HOME and re-exec the
+# installer that came out of the tarball.
+
+remote_install() {
+	REPO=${X_IMPL_REPO:-rrqsoft/x-impl}
+	[ -n "${HOME:-}" ] || die "the one-liner install needs HOME to be set"
+	HOME_DIR=${X_IMPL_HOME:-$HOME/.x-impl}
+
+	have() { command -v "$1" >/dev/null 2>&1; }
+
+	# fetch URL DEST
+	fetch() {
+		if have curl; then
+			curl -fsSL "$1" -o "$2"
+		elif have wget; then
+			wget -q -O "$2" "$1"
+		else
+			die "need curl or wget to download the release"
+		fi
+	}
+
+	# The releases/latest redirect carries the tag. Unlike api.github.com it is
+	# not rate-limited for anonymous callers.
+	latest_tag() {
+		if have curl; then
+			curl -fsSLI -o /dev/null -w '%{url_effective}' \
+				"https://github.com/$REPO/releases/latest" |
+				sed 's|.*/releases/tag/||'
+		elif have wget; then
+			wget -q -S --spider --max-redirect=10 \
+				"https://github.com/$REPO/releases/latest" 2>&1 |
+				sed -n 's|^ *Location: .*/releases/tag/\([^ ]*\).*|\1|p' |
+				tail -n 1
+		else
+			die "need curl or wget to resolve the latest release"
+		fi
+	}
+
+	TAG=${X_IMPL_VERSION:-}
+	if [ -z "$TAG" ]; then
+		TAG=$(latest_tag || true)
+	fi
+	case $TAG in
+	'' | */* | *' '*)
+		die "could not resolve a release for $REPO (does one exist?). Pin one with X_IMPL_VERSION=vX.Y.Z"
+		;;
+	esac
+
+	if have sha256sum; then
+		SHACMD='sha256sum'
+	elif have shasum; then
+		SHACMD='shasum -a 256'
+	else
+		die "need sha256sum or shasum to verify the download"
+	fi
+
+	TMP=$(mktemp -d "${TMPDIR:-/tmp}/x-impl-dl.XXXXXX") || die "could not create a temp directory"
+	trap 'rm -rf "$TMP"' EXIT HUP INT TERM
+
+	TARBALL=x-impl-$TAG.tar.gz
+	BASE=https://github.com/$REPO/releases/download/$TAG
+
+	say "x-impl $TAG: downloading from $REPO"
+	fetch "$BASE/$TARBALL" "$TMP/$TARBALL" || die "could not download $TARBALL from $REPO $TAG"
+	fetch "$BASE/SHA256SUMS" "$TMP/SHA256SUMS" || die "could not download SHA256SUMS from $REPO $TAG"
+
+	expected=$(awk -v f="$TARBALL" '
+		{ sub(/^\*/, "", $2) }
+		$2 == f { print $1; exit }
+	' "$TMP/SHA256SUMS")
+	[ -n "$expected" ] || die "SHA256SUMS has no entry for $TARBALL"
+	actual=$(cd "$TMP" && $SHACMD "$TARBALL" | awk '{ print $1 }')
+	if [ "$expected" != "$actual" ]; then
+		die "checksum mismatch for $TARBALL
+       expected $expected
+       got      $actual
+       Nothing was installed."
+	fi
+	say "checksum ok"
+
+	mkdir -p "$TMP/unpack"
+	tar -xzf "$TMP/$TARBALL" -C "$TMP/unpack" || die "could not unpack $TARBALL"
+	[ -d "$TMP/unpack/x-impl-$TAG/skills" ] ||
+		die "$TARBALL does not look like an x-impl release"
+
+	dest=$HOME_DIR/releases/$TAG
+	mkdir -p "$HOME_DIR/releases"
+	rm -rf "$dest"
+	mv "$TMP/unpack/x-impl-$TAG" "$dest"
+
+	# current/ is what the installed symlinks resolve through, so pointing it
+	# at the new release is the upgrade.
+	link=$HOME_DIR/current
+	[ -L "$link" ] || rm -rf "$link"
+	ln -sfn "$dest" "$link" 2>/dev/null || { rm -f "$link" && ln -s "$dest" "$link"; }
+	say "unpacked $dest"
+
+	# A piped run has no meaningful project directory, so --global is the
+	# default here. --project DIR still works.
+	scope_given=0
+	for a in "$@"; do
+		case $a in
+		--project | --global) scope_given=1 ;;
+		esac
+	done
+
+	say ""
+	if [ "$scope_given" -eq 1 ]; then
+		sh "$link/install.sh" "$@"
+		uninstall_args=$*
+	else
+		sh "$link/install.sh" --global "$@"
+		if [ $# -gt 0 ]; then uninstall_args="--global $*"; else uninstall_args=--global; fi
+	fi
+
+	say ""
+	say "x-impl $TAG installed."
+	say "  release    $dest"
+	say "  current    $link -> releases/$TAG"
+	say "  uninstall  sh $link/install.sh $uninstall_args --uninstall"
+	say "             rm -rf $HOME_DIR    # afterwards, to drop the download too"
+	exit 0
+}
+
+if [ -f "$0" ] && [ -d "$SRC/skills" ]; then
+	: # a checkout or an unpacked release: carry on below
+else
+	remote_install "$@"
+fi
 
 SCOPE=project
 ROOT=$PWD
@@ -43,9 +187,6 @@ Usage: sh install.sh [options]
   -h, --help      this message
 EOF
 }
-
-say() { printf '%s\n' "$*"; }
-die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
 # run CMD... : execute, or print it under --dry-run
 run() {
@@ -311,6 +452,9 @@ uninstall_bootstrap() {
 				rmdir "$BOOT_DIR" 2>/dev/null && say "removed  $BOOT_DIR" || \
 					say "kept     $BOOT_DIR (not empty)"
 			fi
+		elif [ -d "$BOOT_DIR/releases" ]; then
+			# the one-liner's download directory, not a bootstrap
+			say "kept     $BOOT_DIR (the downloaded release; rm -rf it to drop that too)"
 		else
 			say "SKIP     $BOOT_DIR was not created by x-impl; leaving it alone"
 		fi

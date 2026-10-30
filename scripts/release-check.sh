@@ -104,13 +104,48 @@ fi
 
 # --- 4. no URLs ------------------------------------------------------------
 # .github/ is scanned too: the workflow must use bare action refs, never links.
+#
+# One exception: the one-liner installer has to name its own release host, so
+# install.sh and README.md may carry x-impl's own github.com and
+# raw.githubusercontent.com URLs, literal or $REPO-templated. Any other URL,
+# in any file, still fails.
 
-hits=$(repo_files | xargs grep -lnE 'https?://' 2>/dev/null || true)
-if [ -z "$hits" ]; then
-	pass "no http(s) URLs in any shipped or repo file"
+# URLs belonging to this project, in literal and templated form.
+OWN_URL='^https?://(github\.com|raw\.githubusercontent\.com)/(rrqsoft/x-impl|\$REPO|\$\{REPO\}|\$X_IMPL_REPO|\$\{X_IMPL_REPO[^}]*\})([/?#].*)?$'
+
+url_report=$(mktemp "${TMPDIR:-/tmp}/x-impl-urls.XXXXXX")
+while IFS= read -r file; do
+	urls=$(grep -ohE 'https?://[^][(){}<>"'"'"'`[:space:],;]+' "$file" 2>/dev/null |
+		sed 's/[.,:]*$//' | sort -u || true)
+	[ -n "$urls" ] || continue
+
+	case $file in
+	install.sh | README.md)
+		stray=$(printf '%s\n' "$urls" | grep -vE "$OWN_URL" || true)
+		;;
+	*)
+		stray=$urls
+		;;
+	esac
+
+	if [ -n "$stray" ]; then
+		{
+			printf '%s:\n' "$file"
+			printf '%s\n' "$stray" | sed 's/^/  /'
+		} >>"$url_report"
+	fi
+done <<EOF
+$(repo_files)
+EOF
+
+url_offenders=$(cat "$url_report")
+rm -f "$url_report"
+
+if [ -z "$url_offenders" ]; then
+	pass "no http(s) URLs outside x-impl's own release URLs in install.sh and README.md"
 else
-	fail "http(s) URLs appear in:"
-	note "$hits"
+	fail "disallowed http(s) URLs:"
+	note "$url_offenders"
 fi
 
 # --- 5. relative references from SKILL.md resolve --------------------------

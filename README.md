@@ -79,6 +79,35 @@ branch.
 
 ## Install
 
+One line, no checkout:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness openclaw
+X_IMPL_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh
+```
+
+That downloads the latest release tarball, checks it against the published
+`SHA256SUMS`, unpacks it under `~/.x-impl/releases/<tag>/`, points
+`~/.x-impl/current` at it, and then runs the installer from the unpacked copy.
+Because the installed symlinks resolve through `current`, upgrading is just
+re-running the one-liner. It stops without installing anything if the checksum
+does not match.
+
+A piped run has no meaningful project directory, so it defaults to `--global`.
+Everything else still works: pass `--project DIR` for a project install, and
+any other flag below after `sh -s --`. `X_IMPL_VERSION` pins a release;
+`X_IMPL_HOME` moves `~/.x-impl`; `X_IMPL_REPO` points at a fork.
+
+To uninstall what the one-liner installed:
+
+```sh
+sh ~/.x-impl/current/install.sh --global --uninstall
+rm -rf ~/.x-impl
+```
+
+Or from a checkout, which never touches the network:
+
 ```sh
 sh install.sh                       # this project, all harnesses
 sh install.sh --global              # the per-user skill directories instead
@@ -133,7 +162,8 @@ What follows is one section per harness. Read yours and skip the others.
 ### Claude Code
 
 ```sh
-sh install.sh --harness claude --bootstrap
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness claude
+sh install.sh --harness claude --bootstrap   # from a checkout
 ```
 
 Skills land in `.claude/skills/` as symlinks, or `~/.claude/skills/` with
@@ -162,7 +192,8 @@ Details: `adapters/claude.md`.
 ### Codex CLI
 
 ```sh
-sh install.sh --harness codex --bootstrap
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness codex
+sh install.sh --harness codex --bootstrap   # from a checkout
 ```
 
 Skills land in `.agents/skills/` as symlinks, or `~/.agents/skills/` with
@@ -193,7 +224,8 @@ Details: `adapters/codex.md`.
 ### OpenCode
 
 ```sh
-sh install.sh --harness opencode --bootstrap
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness opencode
+sh install.sh --harness opencode --bootstrap   # from a checkout
 ```
 
 Skills land in `.agents/skills/` as symlinks, or `~/.agents/skills/` with
@@ -222,8 +254,13 @@ Details: `adapters/opencode.md`.
 ### OpenClaw
 
 ```sh
-sh install.sh --harness openclaw --bootstrap
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness openclaw
+sh install.sh --harness openclaw --bootstrap   # from a checkout
 ```
+
+The one-liner is a `--global` install, so it links `~/.agents/skills/`, which
+OpenClaw accepts. For the project-scope copy behaviour described next, run it
+with `--project .` or from a checkout.
 
 Skills land in `.agents/skills/` **as copies**, because OpenClaw skips a project
 symlink pointing outside the workspace unless its target is explicitly
@@ -263,14 +300,24 @@ Details: `adapters/openclaw.md`.
 
 ## Privacy
 
-x-impl sends nothing anywhere.
+x-impl sends nothing anywhere, and the skills themselves never reach the
+network at all.
 
-- No URLs that get fetched. No `fetch`, `curl`, `wget`, or remote image loads.
-- No version beacons, no auto-update, no marketplace manifests.
-- No server, no background process, no browser companion.
-- No telemetry, analytics, or usage reporting of any kind.
+- No telemetry, analytics, usage reporting, or version beacons of any kind.
+- No server, no background process, no browser companion, no auto-update, no
+  marketplace manifests.
+- No URLs anywhere in the skills, the adapters, or the index.
 - No runtime dependencies. The installer is POSIX `sh` and touches only the
   paths named above.
+
+The one exception is the one-liner install, which by its nature downloads
+something. Piped in by `curl`, `install.sh` makes exactly these requests, all
+to GitHub: the `releases/latest` redirect to learn the tag (skipped when
+`X_IMPL_VERSION` is set), then the release tarball and its `SHA256SUMS`, which
+it verifies before unpacking. Nothing is uploaded, and no identifier is sent.
+Run from a checkout or an unpacked tarball, the same script makes no network
+calls at all — `release-check.sh` enforces that those GitHub URLs are the only
+ones in the repository.
 
 Everything here is plain text on your disk. What the harness around it does is a
 separate question, and each harness section above names its own telemetry and
@@ -300,9 +347,10 @@ git push me v1.2.3
 ```
 
 `release-check.sh` parses `install.sh`, checks every skill's frontmatter,
-resolves the relative paths skills point at, and runs the installer end to end
-in a scratch directory — install, re-install, uninstall — so a broken release
-fails on your machine rather than in CI.
+resolves the relative paths skills point at, rejects any URL that is not one of
+x-impl's own release URLs in `install.sh` or this README, and runs the
+installer end to end in a scratch directory — install, re-install, uninstall —
+so a broken release fails on your machine rather than in CI.
 
 Pushing a `v*` tag runs `.github/workflows/release.yml`. It refuses the tag
 unless it is `vMAJOR.MINOR.PATCH` (an optional `-suffix` marks a prerelease)

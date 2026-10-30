@@ -1,0 +1,84 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build and publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate the tag and require it on master
+        id: tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+
+          if ! printf '%s\n' "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "error: tag '$TAG' is not vMAJOR.MINOR.PATCH (optional -suffix)" >&2
+            exit 1
+          fi
+
+          if ! git rev-parse --verify -q refs/remotes/origin/master >/dev/null; then
+            git fetch --no-tags --quiet origin +refs/heads/master:refs/remotes/origin/master
+          fi
+
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/master; then
+            echo "error: $TAG points at $GITHUB_SHA, which is not an ancestor of origin/master." >&2
+            echo "       Releases are cut from master only. Land the commit first, then re-tag." >&2
+            exit 1
+          fi
+
+          case "$TAG" in
+          *-*) prerelease=true ;;
+          *) prerelease=false ;;
+          esac
+          echo "prerelease=$prerelease" >>"$GITHUB_OUTPUT"
+          echo "ok: $TAG is on master; prerelease=$prerelease"
+
+      - name: Preflight
+        run: sh scripts/release-check.sh
+
+      - name: Build the release artifacts
+        env:
+          TAG: ${{ github.ref_name }}
+        run: sh scripts/release-build.sh "$TAG"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ steps.tag.outputs.prerelease }}
+        run: |
+          set -eu
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "error: release $TAG already exists; refusing to overwrite it." >&2
+            echo "       Delete it by hand, or cut a new tag." >&2
+            exit 1
+          fi
+
+          if [ "$PRERELEASE" = true ]; then
+            gh release create "$TAG" dist/* \
+              --title "x-impl $TAG" \
+              --notes-file dist/NOTES.md \
+              --verify-tag \
+              --prerelease
+          else
+            gh release create "$TAG" dist/* \
+              --title "x-impl $TAG" \
+              --notes-file dist/NOTES.md \
+              --verify-tag
+          fi

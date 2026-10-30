@@ -1,0 +1,8 @@
+# x-impl's own run scratch (ledgers, briefs, review packages)
+.x-impl/run/
+
+# worktrees created by x-build
+.worktrees/
+
+# release artifacts built by scripts/release-build.sh
+dist/

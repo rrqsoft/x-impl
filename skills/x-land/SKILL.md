@@ -1,16 +1,17 @@
-# x-impl: land
+---
+name: x-land
+description: Use when implementation looks complete and the work needs to land - and whenever you are about to say something is done, fixed, passing or working, or about to commit, push, open a pull request or hand off. Runs the proving command fresh and reads its output before any claim is made, surfaces assumed decisions and rulings the user never saw, gets an independent whole-branch review, then presents the integration options and waits for the user's choice, confirming anything destructive or outward-facing before cleaning up. Also usable for the review alone, without landing.
+---
 
-**When:** implementation looks complete, or you are about to say something is
-done, fixed, passing or working, or about to commit, push, open a pull request
-or hand off. Also for a review on its own.
+# x-land
 
 Prove it, show what the user has not seen, get it reviewed, then let them decide
 how it lands.
 
-**Start by announcing:** `Using x-impl: land — verifying and landing <branch>.`
+**Start by announcing:** `Using x-land to verify and land <branch>.`
 
 **Review only?** Run step 3 on its own and stop there. Say
-`Using x-impl: land — reviewing <range>, not landing it.` Nothing in steps 4 to 6 runs
+`Using x-land to review <range>, not to land it.` Nothing in steps 4 to 6 runs
 until the user asks for it.
 
 ## Step 1 — verify, fresh
@@ -58,10 +59,9 @@ green.
 
 Before the review, in one short block:
 
-- any decision tagged `ASSUMED` by the conclave stage — the user never confirmed
+- any decision tagged `ASSUMED` by `x-conclave` — the user never confirmed
   these, and they are about to become permanent
-- the rulings made during the build, if the build stage did not already report
-  them
+- the rulings made during the build, if `x-build` did not already report them
 - deferred minor findings
 
 They are deciding how to land the work; they should see what is in it.
@@ -82,7 +82,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 Use the commit the work actually started from. `HEAD~1` silently drops every
 commit but the last.
 
-Dispatch a fresh reviewer with `prompts/review.md` filled in at
+Dispatch a fresh reviewer with `../x-build/prompts/review.md` filled in at
 **whole-branch scope**, on the strongest model available — this is a judgement
 task. Hand it the diff path, not the diff: a diff you read inline is a context
 window you no longer have for the work.
@@ -99,7 +99,7 @@ ships:
 - **Critical** — fix now, before anything else. Never land with one unfixed.
 - **Important** — fix before the menu.
 - **Minor** — note it; the user decides whether it is worth the churn.
-- **Wrong** — push back with technical reasoning. Read `stages/answer.md`.
+- **Wrong** — push back with technical reasoning. Load skill `x-answer`.
 
 Any fix here sends you back to step 1. A tree that changed since the last green
 run is an unverified tree.
@@ -191,7 +191,7 @@ Then open the pull request against the base with the forge's own tooling, or the
 creation URL the push prints. Follow the repo's PR template if it has one.
 Report the result back.
 
-Keep the worktree — PR feedback gets fixed there, under `stages/answer.md`.
+Keep the worktree — PR feedback gets fixed there, under `x-answer`.
 
 **A rejected push means the remote moved.** Investigate. Never force-push on
 your own initiative.

@@ -1,12 +1,12 @@
 # Action vocabulary
 
-x-impl's stage files are written in actions, not tool names, so the same text
-runs unchanged on every harness. Each harness file in this directory maps these
+x-impl skills are written in actions, not tool names, so the same skill body runs
+unchanged on every harness. Each harness file in this directory maps these
 actions to its real tools.
 
 | Action | Meaning |
 |---|---|
-| **read a stage file** | Bring the full text of `stages/<name>.md` — inside the x-impl skill directory, alongside this one — into context and follow it. |
+| **load skill `<name>`** | Bring the full text of `skills/<name>/SKILL.md` into context and follow it. |
 | **read a file** | Read a file's contents, or part of it. |
 | **write a file** | Create a file, or replace one wholesale. |
 | **edit a file** | Change part of an existing file in place. |

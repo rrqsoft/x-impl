@@ -1,14 +1,16 @@
-# x-impl: build
+---
+name: x-build
+description: Use when an implementation plan exists and the work is about to be done, or when several genuinely independent problems need working at once. Sets up an isolated workspace first, then runs the work in one of three modes - a fresh implementer subagent per task followed by a spec and quality review and a bounded fix loop, inline in this session where subagents are unavailable, or one subagent per independent problem running concurrently. Keeps a ledger that survives compaction, records rulings instead of stalling, stops only on real blockers, and hands the finished branch to x-land.
+---
 
-**When:** a plan exists and the work is about to be done, or several genuinely
-independent problems need working at once.
+# x-build
 
 Implement the work, task by task, until it is done.
 
-**Start by announcing:** `Using x-impl: build — implementing <plan path>.`
+**Start by announcing:** `Using x-build to implement <plan path>.`
 
-**Input:** a plan from the plan stage. No plan and the work needs one? Read
-`stages/plan.md` first. Parallel mode is the exception — independent problems do not
+**Input:** a plan from `x-plan`. No plan and the work needs one? Load skill
+`x-plan` first. Parallel mode is the exception — independent problems do not
 need a plan document.
 
 ## Isolate
@@ -171,11 +173,11 @@ Same ledger, same rulings, same stops.
 
 1. Read the task's brief — every task, including ones you think you remember.
    What you remember is a summary; the brief has the exact values.
-2. Work the steps in order under `stages/tdd.md`. The failing run is a step, not a
+2. Work the steps in order under `x-tdd`. The failing run is a step, not a
    formality.
 3. Every step with an `Expected:` line: run it, read the output, compare.
    - Matches → next step.
-   - **Code is wrong** → read `stages/debug.md`. Never patch the symptom so the
+   - **Code is wrong** → load skill `x-debug`. Never patch the symptom so the
      output matches.
    - **Plan is wrong** → rule on the smallest change that satisfies the design,
      ledger it, continue.
@@ -202,7 +204,7 @@ need to touch the same files.
 ### When not to
 
 - **The failures might be related.** Fixing one may fix the rest. Investigate
-  together first — read `stages/debug.md`.
+  together first — load skill `x-debug`.
 - **You do not yet know what is broken.** Exploratory debugging is one agent's
   job.
 - **Shared state.** Two agents editing the same file will clobber each other.
@@ -272,7 +274,7 @@ Important enter **one** fix pass, each fix proved by a test that failed first
 and a green suite afterwards. Minor goes to the ledger as
 `Final: minor (deferred): <one-liner>`. A finding you decide not to fix is a
 ruling, with its cost if wrong. A finding you think is simply wrong gets
-technical pushback — read `stages/answer.md`.
+technical pushback — load skill `x-answer`.
 
 ## Finish
 
@@ -283,7 +285,7 @@ technical pushback — read `stages/answer.md`.
    decisions reach the user.
 3. Delete this plan's ledger directory — git history is the record now. Leave
    sibling directories alone.
-4. Read `stages/land.md`.
+4. Load skill `x-land`.
 
 ## Rationalisations
 

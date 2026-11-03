@@ -1,5 +1,5 @@
 ---
-description: High-reasoning decision agent for x-impl's conclave stage. Answers drafted design questions with a rationale, a confidence level, and an escalate flag.
+description: High-reasoning decision agent for x-impl's x-conclave skill. Answers drafted design questions with a rationale, a confidence level, and an escalate flag.
 mode: subagent
 # Replace with the strongest model id your OpenCode install has configured.
 model: anthropic/claude-opus-5-5

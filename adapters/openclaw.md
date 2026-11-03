@@ -8,8 +8,7 @@ behaves differently from the others.
 
 | Action | Tool |
 |---|---|
-| load the x-impl skill | `read` on the location shown in the `<available_skills>` index; `skills_read` / `skills_search` when the index was trimmed for budget |
-| read a stage file | `read` on `stages/<name>.md` in that same skill directory |
+| load skill `<name>` | `read` on the location shown in the `<available_skills>` index; `skills_read` / `skills_search` when the index was trimmed for budget |
 | read a file | `read` |
 | write a file | `write` |
 | edit a file | `edit`, or `apply_patch` |
@@ -37,15 +36,15 @@ Wait with `sessions_yield`, which ends your turn until the child reports. Do not
 poll `subagents(action=list)` in a loop; that is for debugging a child that went
 quiet, not for waiting.
 
-Several independent children can be spawned in one go — the build stage's parallel
+Several independent children can be spawned in one go — `x-build`'s parallel
 mode works as written.
 
 ## The decider
 
-The conclave stage's auto mode needs a decider that reasons harder than the
+`x-conclave`'s auto mode needs a decider that reasons harder than the
 questioner. Spawn it with `model` set explicitly to the strongest model
 configured here — typically a configured alias such as `fable` or `opus` — and
-hand it the skill's `prompts/decider.md` filled in, as a file path.
+hand it `skills/x-conclave/prompts/decider.md` filled in, as a file path.
 
 **Check the spawn result.** An unknown model name does not fail; OpenClaw falls
 back to the session default and logs a warning. Read `resolvedModel` in the
@@ -59,7 +58,7 @@ in the design doc that it ran inline.
 
 ## Escalations
 
-`ask_user` is a close match for the conclave stage's batched escalation: one to three
+`ask_user` is a close match for `x-conclave`'s batched escalation: one to three
 questions, two to four options each, recommendation first with `(Recommended)`
 in the label. That is the batch, sent once, exactly as the skill describes it.
 
@@ -74,7 +73,7 @@ fallback and keep the list in a scratch markdown file.
 
 ## Worktrees
 
-Two routes, and the build stage's Isolate step prefers the first.
+Two routes, and `x-build`'s Isolate step prefers the first.
 
 **Native:** `sessions_spawn` with `worktree: true`, plus `worktreeName` and
 `worktreeBaseRef` when you care about either. OpenClaw prepares the checkout
@@ -82,12 +81,13 @@ before the child's first turn and cleans it up afterwards. This only helps when
 the isolated work is going to a child anyway.
 
 **In this session:** there is no tool that gives the *current* session a
-worktree, so take the git fallback in the skill's `references/isolate.md` —
-`git worktree add` through `exec`, after the step 0 detection.
+worktree, so take the git fallback in
+`skills/x-build/references/isolate.md` — `git worktree add` through `exec`,
+after the step 0 detection.
 
 ## How the bootstrap gets loaded
 
-1. **Skill discovery.** `install.sh` puts `skills/x-impl` into
+1. **Skill discovery.** `install.sh` puts each `skills/x-*` directory into
    `<project>/.agents/skills/` (or `~/.agents/skills/` with `--global`).
    OpenClaw reads, highest precedence first: `<workspace>/skills`,
    `<workspace>/.agents/skills`, `~/.agents/skills`, the state directory's
@@ -95,14 +95,11 @@ worktree, so take the git fallback in the skill's `references/isolate.md` —
    found in a higher tier wins outright. Grouped layouts are found several
    levels down, and `{baseDir}` in a skill body expands to that skill's folder.
    The model sees an `<available_skills>` index — name, description, location —
-   and loads one by reading that location. `x-impl` is the only entry x-impl
-   installs: OpenClaw scans nested directories several levels down, and the
-   stage files are deliberately not named `SKILL.md` and carry no frontmatter,
-   so they are never discovered as skills of their own. The user can name the
-   skill as `$x-impl`.
-2. **Instruction file**, with `--bootstrap`. The installer appends one line to
-   an existing AGENTS.md:
-   `For engineering work, use the x-impl skill (.agents/skills/x-impl/SKILL.md).`
+   and loads one by reading that location. The user can also name one as
+   `$x-conclave`.
+2. **Instruction file**, with `--bootstrap`. The installer copies `x-impl.md`
+   and `adapters/` into `.x-impl/` and appends one line to an existing
+   AGENTS.md: `Read .x-impl/x-impl.md for the x-impl workflow skills.`
 
 A watcher picks up new and changed skills on the next turn, so neither an
 install nor an edit needs a restart.
@@ -117,8 +114,8 @@ install nor an edit needs a restart.
   `~/.agents/skills` and the state directory accept symlinked skill folders, so
   `--global` links normally.
 - **Agent allowlists replace the defaults.** If an agent has a non-empty
-  `skills` list in its configuration, only those names load — `x-impl` has to be
-  added to that list before it appears.
+  `skills` list in its configuration, only those names load — the `x-*` skills
+  have to be added to that list before they appear.
 - **Injected workspace files** are AGENTS.md, SOUL.md, IDENTITY.md, USER.md,
   BOOTSTRAP.md and MEMORY.md. **CLAUDE.md is not one of them**, and there is no
   import syntax, so the pointer line goes to AGENTS.md and stays a pointer the
@@ -138,7 +135,7 @@ OpenClaw has two places the index could be re-injected: an internal
 needed — skill discovery plus the AGENTS.md pointer already cover it — and
 nothing is shipped here. The shapes are in `docs/porting.md`. Note that the
 bundled bootstrap-extra-files mechanism accepts only a whitelist of basenames,
-so it will not pick up a file of x-impl's.
+so it will not pick up `.x-impl/x-impl.md`.
 
 ## Telemetry
 

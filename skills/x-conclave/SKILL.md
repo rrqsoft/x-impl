@@ -1,12 +1,14 @@
-# x-impl: conclave
+---
+name: x-conclave
+description: Use when a request is open-ended - a feature, a component, a tool, a rewrite - and the design is not settled yet, before anything gets built and before someone starts guessing. Also use when the user asks to be grilled, asks to be asked, or wants the questions put to them one at a time. Builds a decision tree, looks the facts up, drafts every question with real options and a recommendation, then either answers them with a high-reasoning decider and escalates only genuinely user-owned calls as one batch, or puts every question to the user directly. Writes a design doc with a decision log.
+---
 
-**When:** a request is open-ended — a feature, a component, a tool, a rewrite —
-and the design is not settled yet, or the user has asked to be grilled.
+# x-conclave
 
 A closed council. The questions get deliberated privately and the session comes
 back out with decisions, a design doc, and a log of who decided what.
 
-**Start by announcing:** `Using x-impl: conclave — settling the design for <topic>.`
+**Start by announcing:** `Using x-conclave to settle the design for <topic>.`
 
 Two modes share one engine. **Auto** is the default: a decider answers, and the
 user hears about only the handful of calls that are genuinely theirs.
@@ -95,7 +97,7 @@ Then:
   is a yes/no or a pick-one, **recommendation first**. Not one message per
   question.
 - **Nobody can answer** (headless, CI, no reply): proceed on the recommendation
-  and tag that row `ASSUMED`. the land stage surfaces ASSUMED rows again before
+  and tag that row `ASSUMED`. `x-land` surfaces ASSUMED rows again before
   anything outward-facing happens.
 
 ## Mode: interactive
@@ -150,7 +152,7 @@ update the log in place. Do not restart the tree.
 
 ## Hand off
 
-When the design is settled, read `stages/plan.md`.
+When the design is settled, load skill `x-plan`.
 
 ## Rationalisations
 

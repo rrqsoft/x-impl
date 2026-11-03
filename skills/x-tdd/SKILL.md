@@ -1,11 +1,13 @@
-# x-impl: tdd
+---
+name: x-tdd
+description: Use when implementing any feature, bug fix, or behaviour change, before writing production code. Red-green-refactor - write one failing test, run it and watch it fail for the right reason, write the minimal code that passes it, run it again, then clean up while staying green.
+---
 
-**When:** implementing any feature, bug fix, or behaviour change, before writing
-production code.
+# x-tdd
 
 Write the test first. Watch it fail. Write the least code that makes it pass.
 
-**Start by announcing:** `Using x-impl: tdd — implementing <what> test-first.`
+**Start by announcing:** `Using x-tdd to implement <what> test-first.`
 
 **The core of it:** a test you never watched fail proves nothing. You do not
 know whether it tests the right thing, or whether it tests anything at all.
@@ -131,4 +133,4 @@ Any of these: delete the code and start over.
 
 Found a bug? Write the failing test that reproduces it first, then follow the
 cycle. The test proves the fix and stops the regression coming back. Never fix a
-bug without one — see `stages/debug.md`.
+bug without one — see `x-debug`.

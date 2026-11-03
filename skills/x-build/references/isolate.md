@@ -1,6 +1,6 @@
 # Isolating the workspace
 
-The long form of the build stage's Isolate step. Detect first, use the native tool
+The long form of `x-build`'s Isolate step. Detect first, use the native tool
 second, fall back to git third. Never fight the harness.
 
 ## Step 0 — are you already isolated?

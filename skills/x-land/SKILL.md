@@ -1,6 +1,7 @@
 ---
 name: x-land
 description: Use when implementation looks complete and the work needs to land - and whenever you are about to say something is done, fixed, passing or working, or about to commit, push, open a pull request or hand off. Runs the proving command fresh and reads its output before any claim is made, surfaces assumed decisions and rulings the user never saw, gets an independent whole-branch review, then presents the integration options and waits for the user's choice, confirming anything destructive or outward-facing before cleaning up. Also usable for the review alone, without landing.
+user-invocable: false
 ---
 
 # x-land

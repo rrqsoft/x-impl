@@ -1,6 +1,7 @@
 ---
 name: x-conclave
 description: Use when a request is open-ended - a feature, a component, a tool, a rewrite - and the design is not settled yet, before anything gets built and before someone starts guessing. Also use when the user asks to be grilled, asks to be asked, or wants the questions put to them one at a time. Builds a decision tree, looks the facts up, drafts every question with real options and a recommendation, then either answers them with a high-reasoning decider and escalates only genuinely user-owned calls as one batch, or puts every question to the user directly. Writes a design doc with a decision log.
+user-invocable: false
 ---
 
 # x-conclave

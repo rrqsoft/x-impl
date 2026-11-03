@@ -45,14 +45,21 @@ and a bare path fails there with a permission error.
 
 ## Frontmatter
 
-Exactly two fields, and nothing harness-specific:
+Two fields, plus one invocation flag on every skill except `x-impl`:
 
 ```yaml
 ---
 name: x-example
 description: Use when ... - ... .
+user-invocable: false
 ---
 ```
+
+- **`user-invocable: false`** keeps the skill out of the user's slash commands
+  while the model can still load it. `x-impl` is the only skill users invoke
+  directly; every other skill is reached by the model. Claude Code and OpenClaw
+  honour the flag; harnesses that do not know it ignore it. It is the one
+  harness-specific field allowed here. Add no others.
 
 - **`name`** must equal the directory name, and use only lowercase letters,
   digits and hyphens. In this set it starts with `x-`, so these skills do not
@@ -151,7 +158,8 @@ not write fill-in-the-blank templates where a concrete case would do.
 - [ ] directory name matches `name`, lowercase with hyphens, `x-` prefix
 - [ ] `description` starts with "Use when", third person, ≤1024 characters
 - [ ] `description` says when, never how
-- [ ] no harness-specific frontmatter fields
+- [ ] `user-invocable: false` unless the skill is `x-impl`, and no other
+      harness-specific frontmatter fields
 - [ ] the body names actions, not tools
 - [ ] optional capabilities have a stated fallback
 - [ ] the procedure starts with the announce rule

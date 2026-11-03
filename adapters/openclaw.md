@@ -95,8 +95,9 @@ after the step 0 detection.
    found in a higher tier wins outright. Grouped layouts are found several
    levels down, and `{baseDir}` in a skill body expands to that skill's folder.
    The model sees an `<available_skills>` index — name, description, location —
-   and loads one by reading that location. The user can also name one as
-   `$x-conclave`.
+   and loads one by reading that location. The user can name `$x-impl`
+   directly; the other skills carry `user-invocable: false`, so OpenClaw does
+   not resolve `$x-conclave` and the like from the user.
 2. **Instruction file**, with `--bootstrap`. The installer copies `x-impl.md`
    and `adapters/` into `.x-impl/` and appends one line to an existing
    AGENTS.md: `Read .x-impl/x-impl.md for the x-impl workflow skills.`

@@ -1,6 +1,7 @@
 ---
 name: x-answer
 description: Use when code review feedback arrives - from a reviewer subagent, a colleague, or a PR comment - before implementing any of it, and especially when a suggestion seems unclear or technically wrong. Verify each item against the codebase, ask about anything unclear before starting, push back with reasoning where the reviewer is wrong, and implement one item at a time without performative agreement.
+user-invocable: false
 ---
 
 # x-answer

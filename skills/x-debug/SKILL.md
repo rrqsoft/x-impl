@@ -1,6 +1,7 @@
 ---
 name: x-debug
 description: Use when hitting any bug, test failure, build failure, performance regression, or unexpected behaviour, before proposing or trying a fix. Reproduce it, trace it to a root cause, form one hypothesis, test it minimally, fix the cause rather than the symptom, and pin it with a regression test - and after three failed fixes, stop and question the design.
+user-invocable: false
 ---
 
 # x-debug

@@ -1,6 +1,7 @@
 ---
 name: x-build
 description: Use when an implementation plan exists and the work is about to be done, or when several genuinely independent problems need working at once. Sets up an isolated workspace first, then runs the work in one of three modes - a fresh implementer subagent per task followed by a spec and quality review and a bounded fix loop, inline in this session where subagents are unavailable, or one subagent per independent problem running concurrently. Keeps a ledger that survives compaction, records rulings instead of stalling, stops only on real blockers, and hands the finished branch to x-land.
+user-invocable: false
 ---
 
 # x-build

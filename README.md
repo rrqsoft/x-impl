@@ -44,9 +44,16 @@ Join it wherever the work starts; skip what does not apply.
 | `x-answer` | Handling review feedback technically. |
 | `x-land` | Verifying, reviewing, and landing the work. |
 
+`x-impl` is the only skill you invoke yourself. The other seven carry
+`user-invocable: false`: the model loads them when the work calls for them, but
+they are not slash commands. Claude Code and OpenClaw enforce this. OpenCode
+ignores the flag, and Codex has no equivalent, so there they stay reachable by
+name.
+
 `x-tdd` and `x-debug` are what `x-build` uses inside each task. `x-answer`
 handles whatever a review sends back, from a reviewer subagent, a colleague, or
-a PR thread. For a review without a landing, run `x-land`'s review step alone.
+a PR thread. For a review without a landing, ask for a review only; `x-land` then runs its
+review step alone.
 
 ### The conclave
 

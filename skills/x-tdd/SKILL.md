@@ -1,6 +1,7 @@
 ---
 name: x-tdd
 description: Use when implementing any feature, bug fix, or behaviour change, before writing production code. Red-green-refactor - write one failing test, run it and watch it fail for the right reason, write the minimal code that passes it, run it again, then clean up while staying green.
+user-invocable: false
 ---
 
 # x-tdd

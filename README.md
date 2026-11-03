@@ -91,7 +91,17 @@ One line, no checkout:
 ```sh
 curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh
 curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --harness openclaw
-X_IMPL_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | X_IMPL_VERSION=v0.1.0 sh
+```
+
+**Pass `--bootstrap` for a working install.** The skills name their tool
+mapping as `adapters/actions.md` and `adapters/<harness>.md`, and only
+`--bootstrap` installs those files, into `<project>/.x-impl/adapters/`. Without
+it the skills still load, but the agent has to guess which tool maps to each
+action, including how to set a subagent's model and effort. For a project:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rrqsoft/x-impl/master/install.sh | sh -s -- --project . --bootstrap
 ```
 
 That downloads the latest release tarball, checks it against the published
@@ -103,7 +113,8 @@ does not match.
 
 A piped run has no meaningful project directory, so it defaults to `--global`.
 Everything else still works: pass `--project DIR` for a project install, and
-any other flag below after `sh -s --`. `X_IMPL_VERSION` pins a release;
+any other flag below after `sh -s --`. `X_IMPL_VERSION` pins a release (set it
+on `sh`, not on `curl`, or the installer never sees it);
 `X_IMPL_HOME` moves `~/.x-impl`; `X_IMPL_REPO` points at a fork.
 
 To uninstall what the one-liner installed:
@@ -145,7 +156,8 @@ wholesale, so changed files land and dropped files go away; the tree afterwards
 matches the source either way.
 
 **What `--bootstrap` adds.** It copies `x-impl.md` and `adapters/` into
-`.x-impl/`, then appends **one line** to an instruction file you already have:
+`.x-impl/`. That is the only way the adapters get installed; the skill
+directories do not carry them. It then appends **one line** to an instruction file you already have:
 `@.x-impl/x-impl.md` for Claude Code, or
 `Read .x-impl/x-impl.md for the x-impl workflow skills.` for the rest. Every
 appended line carries an `<!-- x-impl -->` marker.
@@ -159,10 +171,11 @@ copies, the `.x-impl/` files we wrote, and lines carrying the marker.
 
 ## Harnesses
 
-Installing the skills is enough on its own, everywhere: all four harnesses
-discover `SKILL.md` natively and list what they found. `--bootstrap` is
-reinforcement for sessions that would otherwise never look at the index, and
-hooks are an optional layer nobody needs — `docs/porting.md` has the shapes.
+All four harnesses discover `SKILL.md` natively and list what they found, so
+the skills load without anything else. Use `--bootstrap` as well: it installs
+the adapters the skills refer to, and it points sessions that would otherwise
+never look at the index at it. Hooks are an optional layer nobody needs —
+`docs/porting.md` has the shapes.
 
 What follows is one section per harness. Read yours and skip the others.
 

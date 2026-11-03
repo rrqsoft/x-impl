@@ -1,17 +1,15 @@
----
-name: x-plan
-description: Use when a design or spec exists and needs turning into an implementation plan, before any code is written. Produces small verifiable tasks of a few minutes each, with exact files, test-first steps, the exact command to run and the output that means it passed, saved under docs/x-impl/plans/ and handed to x-build.
----
+# x-impl: plan
 
-# x-plan
+**When:** a design or spec exists and needs turning into an implementation plan,
+before any code is written.
 
 Turn a settled design into tasks an implementer who has never seen this codebase
 could execute correctly.
 
-**Start by announcing:** `Using x-plan to turn the design into an implementation plan.`
+**Start by announcing:** `Using x-impl: plan — turning the design into an implementation plan.`
 
-**Input:** a design doc (from `x-conclave`), a spec, or a detailed request.
-If the design is not settled, load skill `x-conclave` first.
+**Input:** a design doc (from the conclave stage), a spec, or a detailed
+request. If the design is not settled, read `stages/conclave.md` first.
 
 ## What a plan is for
 
@@ -129,7 +127,7 @@ Fix what you find inline. No second pass.
 
 ## Step 5: Hand off
 
-Save it, tell the user where it is, and load skill `x-build`.
+Save it, tell the user where it is, and read `stages/build.md`.
 
 If the user asked to review the plan before implementation, stop here and wait.
 Otherwise proceed — they asked for the work, not for a checkpoint.

@@ -1,13 +1,11 @@
----
-name: x-answer
-description: Use when code review feedback arrives - from a reviewer subagent, a colleague, or a PR comment - before implementing any of it, and especially when a suggestion seems unclear or technically wrong. Verify each item against the codebase, ask about anything unclear before starting, push back with reasoning where the reviewer is wrong, and implement one item at a time without performative agreement.
----
+# x-impl: answer
 
-# x-answer
+**When:** code review feedback arrives — from a reviewer subagent, a colleague,
+or a pull request comment — before implementing any of it.
 
 Answering a review is a technical act, not a social one.
 
-**Start by announcing:** `Using x-answer to work through the review feedback.`
+**Start by announcing:** `Using x-impl: answer — working through the review feedback.`
 
 **The core of it:** verify before implementing, ask before assuming, technical
 correctness over social comfort.

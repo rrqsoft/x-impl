@@ -7,7 +7,7 @@ your actual tool list first; this table covers both.
 
 | Action | v1 | v2 |
 |---|---|---|
-| load skill `<name>` | `skill` | `skill` |
+| read a stage file | `read` on `stages/<name>.md` | `read` on `stages/<name>.md` |
 | read a file | `read` | `read` |
 | write a file | `apply_patch` | `write`, or `patch` with `patchText` |
 | edit a file | `apply_patch` | `edit`, or `patch` |
@@ -21,14 +21,14 @@ your actual tool list first; this table covers both.
 
 ## The decider
 
-`x-conclave`'s auto mode needs a decider. OpenCode picks a subagent's model from
+The conclave stage's auto mode needs a decider. OpenCode picks a subagent's model from
 the agent definition, not from the dispatch call, so the decider is a named
 agent with a pinned model rather than a per-call override.
 
 Copy `adapters/opencode/decider.md` to `.opencode/agents/decider.md` (or the
 global agents directory) and set its `model:` to the strongest model you have
-configured. Then dispatch it by name and hand it
-`skills/x-conclave/prompts/decider.md` filled in.
+configured. Then dispatch it by name and hand it the skill's
+`prompts/decider.md` filled in.
 
 **No `decider` agent defined, or no subagent tool:** run the decider pass
 inline, separately labelled, with the same
@@ -38,20 +38,21 @@ model — that is the questioner grading its own questions.
 
 ## Worktrees
 
-OpenCode has no native worktree tool, so `x-build`'s Isolate step takes the git
+OpenCode has no native worktree tool, so the build stage's Isolate step takes the git
 fallback: `git worktree add` through the shell tool, following
-`skills/x-build/references/isolate.md`. Detect an existing linked worktree first
+`references/isolate.md`. Detect an existing linked worktree first
 (`git rev-parse --git-dir` against `--git-common-dir`).
 
 ## How the bootstrap gets loaded
 
-1. **Skill discovery.** `install.sh` links each `skills/x-*` directory into
+1. **Skill discovery.** `install.sh` links `skills/x-impl` into
    `.agents/skills/` (or `~/.agents/skills/` with `--global`). OpenCode reads
-   `.agents/skills`, `.claude/skills` and `.opencode/skills`, so one link set
-   covers it alongside Codex.
-2. **Instruction file**, with `--bootstrap`. The installer copies `x-impl.md`
-   and `adapters/` into `.x-impl/` and appends one line to an existing
-   AGENTS.md: `Read .x-impl/x-impl.md for the x-impl workflow skills.`
+   `.agents/skills`, `.claude/skills` and `.opencode/skills`, so one link covers
+   it alongside Codex. The stage files under the skill carry no frontmatter, so
+   `x-impl` is the only name registered.
+2. **Instruction file**, with `--bootstrap`. The installer appends one line to
+   an existing AGENTS.md:
+   `For engineering work, use the x-impl skill (.agents/skills/x-impl/SKILL.md).`
    OpenCode falls back to CLAUDE.md when there is no AGENTS.md.
 
 A local plugin could inject the index at session start. The plugin API for that

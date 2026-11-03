@@ -1,13 +1,11 @@
----
-name: x-debug
-description: Use when hitting any bug, test failure, build failure, performance regression, or unexpected behaviour, before proposing or trying a fix. Reproduce it, trace it to a root cause, form one hypothesis, test it minimally, fix the cause rather than the symptom, and pin it with a regression test - and after three failed fixes, stop and question the design.
----
+# x-impl: debug
 
-# x-debug
+**When:** any bug, test failure, build failure, performance regression, or
+unexpected behaviour, before proposing or trying a fix.
 
 Find the cause before touching anything. A fix for a symptom is not a fix.
 
-**Start by announcing:** `Using x-debug to find the root cause of <symptom>.`
+**Start by announcing:** `Using x-impl: debug — finding the root cause of <symptom>.`
 
 **The rule:** no fix before the investigation. If you have not finished phase 1,
 you do not get to propose a fix.
@@ -64,12 +62,12 @@ proceeding as if you do.
 ## Phase 4 — Fix it
 
 1. **Write the failing test first.** The simplest reproduction you can manage;
-   a one-off script if there is no framework. Load skill `x-tdd`. You need this
+   a one-off script if there is no framework. Read `stages/tdd.md`. You need this
    before the fix, not after.
 2. **One fix, at the root cause.** No bundled refactoring, no "while I'm here".
 3. **Verify.** The new test passes, nothing else broke, the original symptom is
    actually gone. Run the command that proves each of those in this message and
-   read its output before claiming anything — `x-land` carries the full
+   read its output before claiming anything — `stages/land.md` carries the full
    discipline.
 
 **If the fix did not work:** stop and count. Under three attempts → back to

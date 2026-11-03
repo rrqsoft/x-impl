@@ -4,7 +4,7 @@
 
 | Action | Tool |
 |---|---|
-| load skill `<name>` | Codex's native skill discovery; failing that, read `.agents/skills/<name>/SKILL.md` |
+| read a stage file | the file-read tool on `stages/<name>.md` in the x-impl skill directory |
 | read a file | the file-read tool |
 | write a file | `apply_patch` (add-file) |
 | edit a file | `apply_patch` |
@@ -54,7 +54,7 @@ between them. Short repeated polls buy nothing and cost a turn each.
 
 ## Worktrees
 
-Codex has no native worktree tool, so `x-build`'s Isolate step takes the git
+Codex has no native worktree tool, so the build stage's Isolate step takes the git
 fallback. Detect the environment before creating anything:
 
 ```sh
@@ -68,17 +68,18 @@ BRANCH=$(git branch --show-current)
   this way. You cannot branch or push from it. Commit the work, then tell the
   user to use the App's own "create branch" or hand-off-to-local controls. You
   can still run tests, stage files, and print a suggested branch name, commit
-  message, and PR description for them to use. `x-land` has a two-option menu
+  message, and PR description for them to use. The land stage has a two-option menu
   for this case, and it never removes a workspace the App owns.
 
 ## How the bootstrap gets loaded
 
-1. **Skill discovery.** `install.sh` links each `skills/x-*` directory into
+1. **Skill discovery.** `install.sh` links `skills/x-impl` into
    `.agents/skills/` (or `~/.agents/skills/` with `--global`), which Codex reads
-   natively.
-2. **Instruction file**, with `--bootstrap`. The installer copies `x-impl.md`
-   and `adapters/` into `.x-impl/` and appends one line to an existing
-   AGENTS.md: `Read .x-impl/x-impl.md for the x-impl workflow skills.`
+   natively. It is the only skill installed; the stage files under it carry no
+   frontmatter and are read as plain files.
+2. **Instruction file**, with `--bootstrap`. The installer appends one line to
+   an existing AGENTS.md:
+   `For engineering work, use the x-impl skill (.agents/skills/x-impl/SKILL.md).`
    Codex has no `@`-include, so this is a pointer the model follows, not an
    inline expansion.
 
